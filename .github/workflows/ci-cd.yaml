@@ -28,6 +28,7 @@ jobs:
   build-and-push:
     needs: select-environment
     runs-on: ubuntu-latest
+    # Loads the matching environment secrets (staging or production)
     environment: ${{ needs.select-environment.outputs.env_name }}
     steps:
       - name: Checkout Code
