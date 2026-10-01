@@ -9,6 +9,7 @@ on:
       - develop
 
 jobs:
+  # 1. Select Environment Job
   select-environment:
     runs-on: ubuntu-latest
     outputs:
@@ -25,11 +26,13 @@ jobs:
             echo "gitops_file=apps/workloads/app-production.yaml" >> $GITHUB_OUTPUT
           fi
 
+  # 2. Build and Push Job
   build-and-push:
     needs: select-environment
     runs-on: ubuntu-latest
-    # Loads the matching environment secrets (staging or production)
     environment: ${{ needs.select-environment.outputs.env_name }}
+    outputs:
+      image_tag: ${{ needs.select-environment.outputs.env_name }}-${{ github.sha }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -62,11 +65,17 @@ jobs:
             ${{ secrets.REGISTRY_USERNAME }}/devops-app:${{ needs.select-environment.outputs.env_name }}-${{ github.sha }}
             ${{ secrets.REGISTRY_USERNAME }}/devops-app:${{ needs.select-environment.outputs.env_name }}-latest
 
+  # 3. Update GitOps Job (Shows as 3rd node in the Actions graph)
+  update-gitops:
+    needs: [select-environment, build-and-push]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.select-environment.outputs.env_name }}
+    steps:
       - name: Update GitOps Repository
         env:
           GITOPS_PAT: ${{ secrets.GITOPS_PAT }}
           GITHUB_USER: ${{ github.repository_owner }}
-          IMAGE_TAG: ${{ needs.select-environment.outputs.env_name }}-${{ github.sha }}
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
           TARGET_FILE: ${{ needs.select-environment.outputs.gitops_file }}
         run: |
           git config --global user.name "github-actions[bot]"
