@@ -28,7 +28,7 @@ jobs:
   build-and-push:
     needs: select-environment
     runs-on: ubuntu-latest
-    environment: ${{ needs.select-environment.outputs.env_name }}
+    #environment: ${{ needs.select-environment.outputs.env_name }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
