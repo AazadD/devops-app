@@ -28,7 +28,7 @@ jobs:
   build-and-push:
     needs: select-environment
     runs-on: ubuntu-latest
-    #environment: ${{ needs.select-environment.outputs.env_name }}
+    environment: ${{ needs.select-environment.outputs.env_name }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
 
       - name: Update GitOps Repository
         env:
-          GITOPS_PAT: ${{ secrets.GITOPS_REPO_PAT }}
+          GITOPS_PAT: ${{ secrets.GITOPS_PAT }}
           GITHUB_USER: ${{ github.repository_owner }}
           IMAGE_TAG: ${{ needs.select-environment.outputs.env_name }}-${{ github.sha }}
           TARGET_FILE: ${{ needs.select-environment.outputs.gitops_file }}
